@@ -1,0 +1,30 @@
+---
+
+- name: Gather OS specific variables
+  include_vars: "../vars/{{ ansible_distribution }}.yml"
+
+- name: Ensure old versions of Docker and conflicting packages are not installed
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: absent
+  loop: "{{ docker_conflicting_packages }}"
+
+- name: Install prerequisites for Docker repository
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ docker_dependencies }}"
+
+- include_tasks: "{{ ansible_distribution }}.yml"
+
+- name: Install docker
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ docker_packages }}"
+
+- name: Start Docker service
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: yes

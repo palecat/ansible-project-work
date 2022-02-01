@@ -1,0 +1,39 @@
+---
+
+- name: Install postgresql
+  ansible.builtin.package:
+    name: "postgresql-{{ postgresql_version }}"
+    state: present
+
+- name: Moving the PostgreSQL Data Directory
+  block:
+    - name: Ensure the new data dir exists
+      ansible.builtin.file:
+        path: "{{ postgresql_data_dir }}"
+        state: directory
+
+    - name: Copy the existing database directory to the new location
+      ansible.posix.synchronize:
+        src: /var/lib/postgresql
+        dest: "{{ postgresql_data_dir }}"
+        perms: yes
+        recursive: yes
+
+    - name: Backup the current data folder
+      ansible.builtin.copy:
+        src: "{{ postgresql_default_data_dir }}"
+        dest: "{{ postgresql_default_data_dir }}.bak"
+
+    - name: Update postgresql configuration
+      ansible.builtin.lineinfile:
+        path: "{{ postgresql_conf }}"
+        regexp: "^data_directory ="
+        line: "data_directory = '{{ postgresql_data_dir }}/postgresql/{{ postgresql_version }}/main'"
+        create: yes
+      notify: Restart postgresql
+  when: postgresql_data_dir != postgresql_default_data_dir
+
+- name: Start postgresql service
+  ansible.builtin.service:
+    name: postgresql
+    state: started

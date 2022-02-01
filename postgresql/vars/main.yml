@@ -1,0 +1,4 @@
+---
+
+postgresql_default_data_dir: "/var/lib/postgresql/{{ postgresql_version }}/main"
+postgresql_conf: "/etc/postgresql/{{ postgresql_version }}/main/postgresql.conf"

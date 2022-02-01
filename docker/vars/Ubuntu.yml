@@ -1,0 +1,11 @@
+---
+
+docker_conflicting_packages:
+  - docker
+  - docker-engine
+
+docker_dependencies:
+  - ca-certificates
+  - curl
+  - gnupg
+  - lsb-release
